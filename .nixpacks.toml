@@ -1,0 +1,9 @@
+[phases.setup]
+# For Node
+node = "18"
+
+[phases.build]
+cmd = "npm install"
+
+[phases.start]
+cmd = "npm start"
