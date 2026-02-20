@@ -8,5 +8,6 @@ Fonctions :
 - Tagall (hidetag)
 - Setprefix
 # Installation
-npm install 
- npm start
+```bash
+npm install
+npm start
