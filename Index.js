@@ -37,6 +37,10 @@ const startBot = async () => {
     const command = (await import(commandPath)).default
     command.execute(sock, msg, args)
   })
-}
+  } // MODE PRIVÉ
+if (config.mode === "private") {
+  const sender = msg.key.participant || msg.key.remoteJid
+  if (!sender.includes(config.owner)) return
+    }
 
 startBot()
