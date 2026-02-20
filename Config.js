@@ -1,5 +1,6 @@
 export default {
   prefix: "!",
   botName: "VansBot-Like",
-  owner: "Joalyn"
+  owner: "Joalyn",
+  mode: "public" // public | private
 }
