@@ -1,10 +1,20 @@
 import makeWASocket, { useMultiFileAuthState } from "@whiskeysockets/baileys"
-import qrcode from "qrcode-terminal"
+import dotenv from "dotenv"
 import fs from "fs"
-import config from "./config.js"
+import path from "path"
 
-const startBot = async () => {
-  const { state, saveCreds } = await useMultiFileAuthState("auth")
+dotenv.config()
+
+// Charger toutes les commandes
+const commands = {}
+const commandFiles = fs.readdirSync('./commands').filter(f => f.endsWith('.js'))
+for (const file of commandFiles) {
+  const cmd = await import(path.join('./commands', file))
+  commands[cmd.default.name] = cmd.default
+}
+
+async function startBot() {
+  const { state, saveCreds } = await useMultiFileAuthState("./session")
 
   const sock = makeWASocket({
     auth: state,
@@ -12,35 +22,24 @@ const startBot = async () => {
   })
 
   sock.ev.on("creds.update", saveCreds)
+  console.log("🤖 Bot WhatsApp prêt !")
 
-  sock.ev.on("connection.update", ({ qr }) => {
-    if (qr) qrcode.generate(qr, { small: true })
-  })
+  // Écoute des messages
+  sock.ev.on("messages.upsert", async m => {
+    const msg = m.messages[0]
+    if (!msg.message?.conversation) return
 
-  sock.ev.on("messages.upsert", async ({ messages }) => {
-    const msg = messages[0]
-    if (!msg.message || msg.key.fromMe) return
+    const text = msg.message.conversation
+    const prefix = '!'
+    if (!text.startsWith(prefix)) return
 
-    const text =
-      msg.message.conversation ||
-      msg.message.extendedTextMessage?.text ||
-      ""
+    const args = text.slice(prefix.length).trim().split(/ +/)
+    const command = args.shift().toLowerCase()
 
-    if (!text.startsWith(config.prefix)) return
-
-    const args = text.slice(config.prefix.length).trim().split(/ +/)
-    const commandName = args.shift().toLowerCase()
-
-    const commandPath = `./commands/${commandName}.js`
-    if (!fs.existsSync(commandPath)) return
-
-    const command = (await import(commandPath)).default
-    command.execute(sock, msg, args)
-  })
-  } // MODE PRIVÉ
-if (config.mode === "private") {
-  const sender = msg.key.participant || msg.key.remoteJid
-  if (!sender.includes(config.owner)) return
+    if (commands[command]) {
+      commands[command].execute(sock, msg, args)
     }
+  })
+}
 
 startBot()
