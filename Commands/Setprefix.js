@@ -1,25 +1,14 @@
-import config from "../config.js"
-import fs from "fs"
+const fs = require("fs")
 
-export default {
+module.exports = {
   name: "setprefix",
-  description: "Changer le préfixe du bot",
   execute(sock, msg, args) {
-    if (!args[0]) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Utilisation : setprefix [nouveau préfixe]"
-      })
-    }
+    if (!args[0]) return sock.sendMessage(msg.key.remoteJid, { text: "Utilise : !setprefix [nouveau préfixe]" })
 
-    config.prefix = args[0]
+    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    settings.prefix = args[0]
+    fs.writeFileSync("./settings.json", JSON.stringify(settings, null, 2))
 
-    fs.writeFileSync(
-      "./config.js",
-      `export default ${JSON.stringify(config, null, 2)}`
-    )
-
-    sock.sendMessage(msg.key.remoteJid, {
-      text: `✅ Préfixe changé en : ${args[0]}`
-    })
+    sock.sendMessage(msg.key.remoteJid, { text: `✅ Préfixe changé en : *${args[0]}*` })
   }
-        }
+}
