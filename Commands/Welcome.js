@@ -1,13 +1,26 @@
-export default {
+const fs = require("fs")
+
+module.exports = {
   name: "welcome",
-  description: "Message de bienvenue automatique",
-  async execute(sock) {
-    sock.ev.on("group-participants.update", async update => {
-      if (update.action === "add") {
-        await sock.sendMessage(update.id, {
-          text: "👋 Bienvenue dans le groupe !"
-        })
-      }
-    })
+  execute(sock, msg, args) {
+    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+
+    if (!args[0]) {
+      return sock.sendMessage(msg.key.remoteJid, {
+        text: "Utilise : !welcome on / off"
+      })
+    }
+
+    if (args[0] === "on") {
+      settings.welcome = true
+      fs.writeFileSync("./settings.json", JSON.stringify(settings, null, 2))
+      return sock.sendMessage(msg.key.remoteJid, { text: "✅ Welcome activé" })
+    }
+
+    if (args[0] === "off") {
+      settings.welcome = false
+      fs.writeFileSync("./settings.json", JSON.stringify(settings, null, 2))
+      return sock.sendMessage(msg.key.remoteJid, { text: "❌ Welcome désactivé" })
+    }
   }
-}
+        }
