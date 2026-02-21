@@ -1,15 +1,16 @@
-export default {
-  name: "ia",
-  description: "IA basique (simulation)",
+module.exports = {
+  name: "ai",
   execute(sock, msg, args) {
     if (!args.length) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Utilisation : ia [question]"
+        text: "🤖 Utilise : !ai [message]"
       })
     }
 
+    const question = args.join(" ")
+
     sock.sendMessage(msg.key.remoteJid, {
-      text: `🤖 IA :\nJe réfléchis à "${args.join(" ")}"...\n\n⚠️ IA réelle non connectée`
+      text: `🤖 IA (démo)\n\nTu as dit : "${question}"`
     })
   }
-}
+          }
