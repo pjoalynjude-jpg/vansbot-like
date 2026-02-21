@@ -32,4 +32,4 @@ module.exports = {
 `
     sock.sendMessage(msg.key.remoteJid, { text: menu })
   }
-}   }
+}   
