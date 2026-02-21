@@ -1,29 +1,14 @@
-import fs from "fs"
-
-export default {
+module.exports = {
   name: "help",
-  description: "Aide sur une commande",
-  async execute(sock, msg, args) {
+  execute(sock, msg, args) {
     if (!args[0]) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❓ Utilisation : help [commande]"
+        text: "❓ Utilise : !help [commande]\nEx: !help ping"
       })
     }
 
-    const file = `./commands/${args[0]}.js`
-    if (!fs.existsSync(file)) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Commande introuvable"
-      })
-    }
-
-    const cmd = (await import(file)).default
     sock.sendMessage(msg.key.remoteJid, {
-      text: `
-📖 *AIDE*
-Commande : ${cmd.name}
-Description : ${cmd.description}
-`
+      text: `ℹ️ Aide pour la commande *${args[0]}*`
     })
   }
 }
