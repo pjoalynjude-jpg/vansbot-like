@@ -1,16 +1,15 @@
-export default {
+module.exports = {
   name: "youtube",
   alias: ["yt"],
-  description: "Lien YouTube (placeholder)",
   execute(sock, msg, args) {
     if (!args[0]) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Utilisation : youtube [lien]"
+        text: "📺 Utilise : !youtube [lien]"
       })
     }
 
     sock.sendMessage(msg.key.remoteJid, {
-      text: `▶️ Lien YouTube reçu :\n${args[0]}\n\n⚠️ Téléchargement non activé`
+      text: `📺 YouTube reçu :\n${args[0]}\n\n📥 Téléchargement bientôt disponible`
     })
   }
-}
+      }
