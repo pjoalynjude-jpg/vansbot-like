@@ -1,7 +1,21 @@
+// index.js
+const fs = require("fs")
 const { default: makeWASocket, useMultiFileAuthState } = require("@whiskeysockets/baileys")
-require("dotenv").config()
+const dotenv = require("dotenv")
+dotenv.config()
 const qrcode = require("qrcode-terminal")
 
+// Loader de commandes
+const commands = {}
+fs.readdirSync("./commands").forEach(file => {
+  const cmd = require(`./commands/${file}`)
+  commands[cmd.name] = cmd
+  if (cmd.alias) {
+    cmd.alias.forEach(a => commands[a] = cmd)
+  }
+})
+
+// Démarrage du bot
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState("./session")
 
@@ -11,13 +25,63 @@ async function startBot() {
   })
 
   sock.ev.on("creds.update", saveCreds)
-  
+
   sock.ev.on("connection.update", update => {
     if (update.qr) qrcode.generate(update.qr, { small: true })
-    if (update.connection === "open") {
-      console.log("🤖 Bot WhatsApp prêt !")
+    if (update.connection === "open") console.log("🤖 Bot WhatsApp prêt !")
+  })
+
+  // Listener messages (commandes)
+  sock.ev.on("messages.upsert", async ({ messages }) => {
+    const msg = messages[0]
+    if (!msg.message || !msg.message.conversation) return
+
+    const text = msg.message.conversation
+    const prefix = "!"
+    if (!text.startsWith(prefix)) return
+
+    const args = text.slice(prefix.length).trim().split(/ +/)
+    const command = args.shift().toLowerCase()
+
+    // Lire le settings
+    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    const owner = process.env.OWNER_NUMBER + "@s.whatsapp.net"
+
+    // Mode privé : bloquer tout sauf OWNER
+    if (settings.mode === "private" && msg.key.participant !== owner) return
+
+    // Exécuter la commande si elle existe
+    if (commands[command]) {
+      commands[command].execute(sock, msg, args)
+    }
+  })
+
+  // Listener groupes (welcome / goodbye)
+  sock.ev.on("group-participants.update", async update => {
+    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    const jid = update.id
+
+    // Welcome
+    if (update.action === "add" && settings.welcome) {
+      for (const user of update.participants) {
+        await sock.sendMessage(jid, {
+          text: `👋 Bienvenue @${user.split("@")[0]} !`,
+          mentions: [user]
+        })
+      }
+    }
+
+    // Goodbye
+    if (update.action === "remove" && settings.goodbye) {
+      for (const user of update.participants) {
+        await sock.sendMessage(jid, {
+          text: `👋 Au revoir @${user.split("@")[0]} 😢`,
+          mentions: [user]
+        })
+      }
     }
   })
 }
 
+// Lancer le bot
 startBot()
