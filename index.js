@@ -37,7 +37,8 @@ async function startBot() {
     if (!msg.message || !msg.message.conversation) return
 
     const text = msg.message.conversation
-    const prefix = "!"
+    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    const prefix = settings.prefix
     if (!text.startsWith(prefix)) return
 
     const args = text.slice(prefix.length).trim().split(/ +/)
