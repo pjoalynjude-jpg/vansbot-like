@@ -1,0 +1,6 @@
+{
+  "mode": "public",
+  "welcome": true,
+  "goodbye": true,
+  "prefix": "!"
+}
