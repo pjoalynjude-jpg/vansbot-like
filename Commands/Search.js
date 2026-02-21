@@ -1,15 +1,16 @@
-export default {
+module.exports = {
   name: "search",
-  description: "Recherche simple (placeholder)",
   execute(sock, msg, args) {
     if (!args.length) {
       return sock.sendMessage(msg.key.remoteJid, {
-        text: "❌ Utilisation : search [recherche]"
+        text: "🔎 Utilise : !search [recherche]"
       })
     }
 
+    const query = args.join(" ")
+
     sock.sendMessage(msg.key.remoteJid, {
-      text: `🔍 Résultat pour : *${args.join(" ")}*\n\n⚠️ API non connectée`
+      text: `🔎 Résultat de recherche (démo)\n\nRecherche : *${query}*`
     })
   }
 }
