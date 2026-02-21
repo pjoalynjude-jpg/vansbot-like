@@ -1,6 +1,6 @@
-export default {
+module.exports = {
   prefix: "!",
   botName: "VansBot-Like",
-  owner: "Joalyn",
-  mode: "public" // public | private
+  owner: "Paurice",
+  mode: "public"
 }
