@@ -1,19 +1,9 @@
-import config from "../config.js"
-import fs from "fs"
+const fs = require("fs")
 
-export default {
+module.exports = {
   name: "setprivate",
-  description: "Met le bot en mode privé",
   execute(sock, msg) {
-    config.mode = "private"
-
-    fs.writeFileSync(
-      "./config.js",
-      `export default ${JSON.stringify(config, null, 2)}`
-    )
-
-    sock.sendMessage(msg.key.remoteJid, {
-      text: "🔒 Bot en mode PRIVÉ"
-    })
+    fs.writeFileSync("./mode.json", JSON.stringify({ mode: "private" }))
+    sock.sendMessage(msg.key.remoteJid, { text: "🔒 Bot mis en mode *PRIVÉ*" })
   }
 }
