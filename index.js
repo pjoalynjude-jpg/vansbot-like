@@ -5,6 +5,9 @@ const dotenv = require("dotenv")
 dotenv.config()
 const qrcode = require("qrcode-terminal")
 
+// Fichier de settings
+const settingsFile = "./settings.json"
+
 // Loader de commandes
 const commands = {}
 fs.readdirSync("./commands").forEach(file => {
@@ -36,22 +39,19 @@ async function startBot() {
     const msg = messages[0]
     if (!msg.message || !msg.message.conversation) return
 
-    const text = msg.message.conversation
-    const settings = JSON.parse(fs.readFileSync("./settings.json"))
-    const prefix = settings.prefix
-    if (!text.startsWith(prefix)) return
-
-    const args = text.slice(prefix.length).trim().split(/ +/)
-    const command = args.shift().toLowerCase()
-
-    // Lire le settings
-    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    // Lire settings pour chaque message
+    const currentSettings = JSON.parse(fs.readFileSync(settingsFile))
+    const prefix = currentSettings.prefix
     const owner = process.env.OWNER_NUMBER + "@s.whatsapp.net"
 
-    // Mode privé : bloquer tout sauf OWNER
-    if (settings.mode === "private" && msg.key.participant !== owner) return
+    if (!msg.message.conversation.startsWith(prefix)) return
 
-    // Exécuter la commande si elle existe
+    const args = msg.message.conversation.slice(prefix.length).trim().split(/ +/)
+    const command = args.shift().toLowerCase()
+
+    // Mode privé : bloquer tout sauf OWNER
+    if (currentSettings.mode === "private" && msg.key.participant !== owner) return
+
     if (commands[command]) {
       commands[command].execute(sock, msg, args)
     }
@@ -59,11 +59,11 @@ async function startBot() {
 
   // Listener groupes (welcome / goodbye)
   sock.ev.on("group-participants.update", async update => {
-    const settings = JSON.parse(fs.readFileSync("./settings.json"))
+    const currentSettings = JSON.parse(fs.readFileSync(settingsFile))
     const jid = update.id
 
     // Welcome
-    if (update.action === "add" && settings.welcome) {
+    if (update.action === "add" && currentSettings.welcome) {
       for (const user of update.participants) {
         await sock.sendMessage(jid, {
           text: `👋 Bienvenue @${user.split("@")[0]} !`,
@@ -73,7 +73,7 @@ async function startBot() {
     }
 
     // Goodbye
-    if (update.action === "remove" && settings.goodbye) {
+    if (update.action === "remove" && currentSettings.goodbye) {
       for (const user of update.participants) {
         await sock.sendMessage(jid, {
           text: `👋 Au revoir @${user.split("@")[0]} 😢`,
