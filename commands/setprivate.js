@@ -1,9 +1,4 @@
-const fs = require("fs")
-
-module.exports = {
-  name: "setprivate",
-  execute(sock, msg) {
-    fs.writeFileSync("./mode.json", JSON.stringify({ mode: "private" }))
-    sock.sendMessage(msg.key.remoteJid, { text: "🔒 Bot mis en mode *PRIVÉ*" })
-  }
+export default async (sock, from, state) => {
+  state.mode = "private"
+  sock.sendMessage(from, { text: "🔒 Mode privé activé" })
 }
