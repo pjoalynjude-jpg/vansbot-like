@@ -1,14 +1,21 @@
-module.exports = {
-  name: "help",
-  execute(sock, msg, args) {
-    if (!args[0]) {
-      return sock.sendMessage(msg.key.remoteJid, {
-        text: "❓ Utilise : !help [commande]\nEx: !help ping"
-      })
-    }
+export default async (sock, from, prefix) => {
+  const helpText = `🤖 *HELP MENU*
 
-    sock.sendMessage(msg.key.remoteJid, {
-      text: `ℹ️ Aide pour la commande *${args[0]}*`
-    })
-  }
+${prefix}menu
+${prefix}help
+${prefix}ping
+${prefix}tagall
+${prefix}setprefix
+${prefix}welcome
+${prefix}goodbye
+${prefix}setprivate
+${prefix}setpublic
+${prefix}youtube
+${prefix}tiktok
+${prefix}search
+${prefix}ia
+
+⚡ VansBot Like`
+
+  await sock.sendMessage(from, { text: helpText })
 }
